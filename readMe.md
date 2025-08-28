@@ -213,7 +213,8 @@ A: 大图片处理较慢属正常现象，建议先用小图测试参数
 如有问题或建议，请通过以下方式联系：
 
 - 提交 [Issue](https://github.com/your-username/auto-data-augmentation-tool/issues)
-- 发送邮件至：your-email@example.com
+- 发送邮件至：2584528681@qq.com
+
 
 ---
 
