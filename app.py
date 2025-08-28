@@ -199,7 +199,7 @@ def main():
 
         with right:
             st.subheader("预览")
-            st.image(to_rgb(bgr), caption="原图", use_column_width=True)
+            st.image(to_rgb(bgr), caption="原图", use_container_width=True)
 
             if "rects" in st.session_state and len(st.session_state["rects"]) > 0:
                 rects = st.session_state["rects"]
@@ -210,7 +210,7 @@ def main():
                     mode_text = "严格模式" if st.session_state.get("strict_mode", False) else "普通模式"
                     st.caption(f"窗口尺寸: {win_w}x{win_h} | 重叠比例: {grid_overlap:.2f} | {mode_text} | 共 {len(rects)} 个裁片")
                 
-                st.image(to_rgb(overlay), caption="裁切建议叠加", use_column_width=True)
+                st.image(to_rgb(overlay), caption="裁切建议叠加", use_container_width=True)
 
                 # 缩略图网格
                 st.subheader("裁切缩略图")
@@ -222,7 +222,7 @@ def main():
                 cols = st.columns(4)
                 for i, (x, y, w, h) in enumerate(rects):
                     crop = bgr[y:y+h, x:x+w]
-                    cols[i % 4].image(to_rgb(crop), caption=f"片段-{i} ({w}x{h})", use_column_width=True)
+                    cols[i % 4].image(to_rgb(crop), caption=f"片段-{i} ({w}x{h})", use_container_width=True)
 
         # 批量导出
         st.markdown("---")
