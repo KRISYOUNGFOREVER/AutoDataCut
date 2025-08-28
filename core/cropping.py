@@ -133,9 +133,18 @@ def draw_rects(bgr: np.ndarray, rects: List[Rect]) -> np.ndarray:
 
 def ensure_dir(path: str):
     """
-    确保目录存在
+    确保目录存在，兼容 Streamlit Cloud 环境
     """
-    os.makedirs(path, exist_ok=True)
+    try:
+        os.makedirs(path, exist_ok=True)
+    except (OSError, PermissionError) as e:
+        # 在 Streamlit Cloud 环境中，某些路径可能无法创建
+        # 使用临时目录作为备选方案
+        import tempfile
+        temp_dir = tempfile.mkdtemp()
+        print(f"警告：无法创建目录 {path}，使用临时目录 {temp_dir}")
+        return temp_dir
+    return path
 
 def save_crop(bgr: np.ndarray, rect: Rect, out_path: str, resize_to: Tuple[int, int] = None):
     """
@@ -146,16 +155,38 @@ def save_crop(bgr: np.ndarray, rect: Rect, out_path: str, resize_to: Tuple[int, 
     if resize_to is not None:
         crop = cv2.resize(crop, resize_to, interpolation=cv2.INTER_LANCZOS4)
     
+    # 确保输出目录存在
+    out_dir = os.path.dirname(out_path)
+    if out_dir:
+        out_dir = ensure_dir(out_dir) or out_dir
+        # 如果目录被重定向，更新输出路径
+        if out_dir != os.path.dirname(out_path):
+            out_path = os.path.join(out_dir, os.path.basename(out_path))
+    
     ext = os.path.splitext(out_path)[1] or ".jpg"
     ok, buf = cv2.imencode(ext, crop, [cv2.IMWRITE_JPEG_QUALITY, 95])
     if not ok:
         raise IOError(f"Failed to encode image for saving: {out_path}")
-    buf.tofile(out_path)
+    
+    try:
+        buf.tofile(out_path)
+    except (OSError, PermissionError) as e:
+        # 在某些环境中，直接写入可能失败，尝试使用标准文件操作
+        with open(out_path, 'wb') as f:
+            f.write(buf.tobytes())
 
 def maybe_save_full(bgr: np.ndarray, out_path: str, resize_to: Tuple[int, int] = None):
     """
     保存完整图像
     """
+    # 确保输出目录存在
+    out_dir = os.path.dirname(out_path)
+    if out_dir:
+        out_dir = ensure_dir(out_dir) or out_dir
+        # 如果目录被重定向，更新输出路径
+        if out_dir != os.path.dirname(out_path):
+            out_path = os.path.join(out_dir, os.path.basename(out_path))
+    
     img = bgr
     if resize_to is not None:
         img = cv2.resize(img, resize_to, interpolation=cv2.INTER_LANCZOS4)
@@ -164,7 +195,13 @@ def maybe_save_full(bgr: np.ndarray, out_path: str, resize_to: Tuple[int, int] =
     ok, buf = cv2.imencode(ext, img, [cv2.IMWRITE_JPEG_QUALITY, 95])
     if not ok:
         raise IOError(f"Failed to encode image for saving: {out_path}")
-    buf.tofile(out_path)
+    
+    try:
+        buf.tofile(out_path)
+    except (OSError, PermissionError) as e:
+        # 在某些环境中，直接写入可能失败，尝试使用标准文件操作
+        with open(out_path, 'wb') as f:
+            f.write(buf.tobytes())
 
 def compute_maps(bgr: np.ndarray, need_saliency: bool, need_texture: bool):
     sal_map = get_saliency_map(bgr) if need_saliency else None

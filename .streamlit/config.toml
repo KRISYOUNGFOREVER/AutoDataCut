@@ -1,2 +1,8 @@
 [server]
-maxUploadSize = 300  # 设置为1000MB (1GB)
+maxUploadSize = 300  # 设置为300MB
+headless = true
+enableCORS = false
+port = 8501
+
+[browser]
+gatherUsageStats = false

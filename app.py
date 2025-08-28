@@ -78,7 +78,7 @@ def main():
         )
 
     output_dir = st.sidebar.text_input("输出目录", value=default_out)
-    ensure_dir(output_dir)
+    output_dir = ensure_dir(output_dir) or output_dir
 
     # 裁切尺寸预设
     preset_mode = st.sidebar.selectbox("裁切尺寸预设", options=["自定义尺寸", "按边长比例", "按数量估算"], index=0)
@@ -122,7 +122,7 @@ def main():
     )
     no_resize = st.sidebar.checkbox("严格不缩放（保留原始像素）", value=True)
 
-    ensure_dir(output_dir)
+    output_dir = ensure_dir(output_dir) or output_dir
 
     # 主面板
     # 主面板数据源

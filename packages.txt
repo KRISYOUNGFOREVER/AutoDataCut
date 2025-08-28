@@ -1,0 +1,9 @@
+libgl1-mesa-glx
+libsm6
+libxext6
+libxrender-dev
+libglib2.0-0
+libgtk-3-0
+libgdk-pixbuf2.0-0
+libfontconfig1
+libxss1
