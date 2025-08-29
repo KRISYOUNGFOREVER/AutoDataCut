@@ -179,14 +179,6 @@ def maybe_save_full(bgr: np.ndarray, out_path: str, resize_to: Tuple[int, int] =
     """
     保存完整图像
     """
-    # 确保输出目录存在
-    out_dir = os.path.dirname(out_path)
-    if out_dir:
-        out_dir = ensure_dir(out_dir) or out_dir
-        # 如果目录被重定向，更新输出路径
-        if out_dir != os.path.dirname(out_path):
-            out_path = os.path.join(out_dir, os.path.basename(out_path))
-    
     img = bgr
     if resize_to is not None:
         img = cv2.resize(img, resize_to, interpolation=cv2.INTER_LANCZOS4)
@@ -195,13 +187,7 @@ def maybe_save_full(bgr: np.ndarray, out_path: str, resize_to: Tuple[int, int] =
     ok, buf = cv2.imencode(ext, img, [cv2.IMWRITE_JPEG_QUALITY, 95])
     if not ok:
         raise IOError(f"Failed to encode image for saving: {out_path}")
-    
-    try:
-        buf.tofile(out_path)
-    except (OSError, PermissionError) as e:
-        # 在某些环境中，直接写入可能失败，尝试使用标准文件操作
-        with open(out_path, 'wb') as f:
-            f.write(buf.tobytes())
+    buf.tofile(out_path)
 
 def compute_maps(bgr: np.ndarray, need_saliency: bool, need_texture: bool):
     sal_map = get_saliency_map(bgr) if need_saliency else None
