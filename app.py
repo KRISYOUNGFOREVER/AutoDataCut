@@ -41,6 +41,16 @@ def load_bgr(path: str) -> np.ndarray:
         return img
 
 def to_rgb(img_bgr: np.ndarray) -> np.ndarray:
+    # 添加安全检查
+    if img_bgr is None or img_bgr.size == 0:
+        # 返回一个默认的小图像
+        return np.zeros((50, 50, 3), dtype=np.uint8)
+    
+    # 检查图像维度
+    if len(img_bgr.shape) != 3 or img_bgr.shape[2] != 3:
+        # 如果不是3通道图像，创建一个默认图像
+        return np.zeros((50, 50, 3), dtype=np.uint8)
+    
     return cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
 
 def read_uploaded_to_bgr(uploaded_file):
@@ -221,8 +231,23 @@ def main():
                 
                 cols = st.columns(4)
                 for i, (x, y, w, h) in enumerate(rects):
-                    crop = bgr[y:y+h, x:x+w]
-                    cols[i % 4].image(to_rgb(crop), caption=f"片段-{i} ({w}x{h})", use_container_width=True)
+                    # 确保裁切区域在图像范围内
+                    img_h, img_w = bgr.shape[:2]
+                    x = max(0, min(x, img_w))
+                    y = max(0, min(y, img_h))
+                    w = min(w, img_w - x)
+                    h = min(h, img_h - y)
+                    
+                    # 检查裁切区域是否有效
+                    if w > 0 and h > 0:
+                        crop = bgr[y:y+h, x:x+w]
+                        # 再次检查裁切结果
+                        if crop.size > 0:
+                            cols[i % 4].image(to_rgb(crop), caption=f"片段-{i} ({w}x{h})", use_container_width=True)
+                        else:
+                            cols[i % 4].write(f"⚠️ 片段-{i} 无效")
+                    else:
+                        cols[i % 4].write(f"⚠️ 片段-{i} 超出边界")
 
         # 批量导出
         st.markdown("---")
